@@ -240,7 +240,7 @@
                                     Margin="8,0,0,0"
                                     IsEnabled="False"
                                     Click="CaptureButton_Click"
-                                    ToolTip="截取所选窗口，快捷键 Ctrl+Alt+Shift+S"
+                                    ToolTip="截取当前窗口或所选窗口，快捷键 Ctrl+Alt+Shift+S"
                                     AutomationProperties.Name="截取所选窗口">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="&#xE722;"

@@ -58,3 +58,4 @@ The helper prints a JSON result with `ok`, the chosen `handle`, `title`, `proces
 - If the window is minimized, protected, or renders only black, explain the limitation and ask before trying another method.
 - For web-page content, prefer a browser or Playwright page screenshot when available. Use Window Shot when the user explicitly wants the browser/application window itself.
 - The GUI is for interactive selection: run `bin/WindowShot.exe` with no arguments, let the user pick the window, then use the capture button. The GUI copies the capture to the clipboard and saves it under the user's Pictures folder.
+- While the GUI is running, `Ctrl+Alt+Shift+S` captures the foreground window when pressed from another app; when the GUI is focused, it captures the selected window.

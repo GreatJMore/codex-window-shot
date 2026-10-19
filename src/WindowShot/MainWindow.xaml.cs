@@ -148,6 +148,17 @@ public partial class MainWindow : Window
 
     private async Task CaptureFromHotkeyAsync()
     {
+        var foreground = GetForegroundWindow();
+        var foregroundTarget = foreground == IntPtr.Zero
+            ? null
+            : WindowEnumerator.Describe(foreground);
+
+        if (foregroundTarget is not null && !foregroundTarget.IsMinimized)
+        {
+            await CaptureForegroundWindowAsync(foregroundTarget);
+            return;
+        }
+
         if (_selected is null)
         {
             if (!IsVisible)
@@ -434,6 +445,56 @@ public partial class MainWindow : Window
         }
     }
 
+    private async Task CaptureForegroundWindowAsync(WindowInfo target)
+    {
+        if (_closed)
+        {
+            return;
+        }
+
+        if (!await _captureGate.WaitAsync(0))
+        {
+            ShowToast("正在读取窗口，请稍候");
+            return;
+        }
+
+        CaptureButton.IsEnabled = false;
+        CopyButton.IsEnabled = false;
+
+        try
+        {
+            var result = await Task.Run(() => WindowCaptureService.Capture(target.Handle));
+            if (_closed)
+            {
+                return;
+            }
+
+            var path = await Task.Run(() => SaveImage(result.Image, target));
+            CopyImage(result.Image);
+            ShowToast("已保存并复制");
+            StatusText.Text = $"已保存 · {path}";
+            StatusText.ToolTip = path;
+        }
+        catch (Exception ex)
+        {
+            if (!_closed)
+            {
+                ShowToast(ex.Message, isError: true);
+                StatusText.Text = ex.Message;
+            }
+        }
+        finally
+        {
+            _captureGate.Release();
+            if (!_closed && _selected is not null)
+            {
+                var minimized = IsIconic(_selected.Handle);
+                CaptureButton.IsEnabled = !minimized;
+                CopyButton.IsEnabled = !minimized;
+            }
+        }
+    }
+
     private string SaveImage(BitmapSource image, WindowInfo target)
     {
         var folder = _settings.ResolveSaveFolder();
@@ -601,4 +662,7 @@ public partial class MainWindow : Window
 
     [DllImport("user32.dll")]
     private static extern bool IsIconic(IntPtr hwnd);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetForegroundWindow();
 }

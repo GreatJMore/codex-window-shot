@@ -6,7 +6,7 @@ Windows 下按窗口截图的小工具，附带一个给 Codex 使用的技能�
 
 - 按窗口捕获，不依赖整屏截图或框选
 - 实时预览、保存 PNG、复制到剪贴板
-- 全局快捷键 `Ctrl+Alt+Shift+S`
+- 全局快捷键 `Ctrl+Alt+Shift+S`，在其他应用里直接截当前活动窗口
 - 命令行列出窗口、按句柄或标题截图
 - 附带 Codex skill，自动按窗口截图
 
@@ -26,7 +26,7 @@ src/WindowShot/            C# / WPF 源码
 1. 运行 `skill\bin\WindowShot.exe`。
 2. 在左侧选择目标窗口，右侧会显示实时预览。
 3. 点“截图”，图片会保存到 `图片\WindowShot` 并复制到剪贴板。
-4. 工具运行时，`Ctrl+Alt+Shift+S` 可对当前选中的窗口直接截图。
+4. 工具运行时，在其他应用里按 `Ctrl+Alt+Shift+S` 会直接截取当前活动窗口；如果工具自己在前台，则截取左侧选中的窗口。
 
 运行需要 .NET 8 Desktop Runtime。
 

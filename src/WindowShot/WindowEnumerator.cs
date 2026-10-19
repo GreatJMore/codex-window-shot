@@ -16,6 +16,7 @@ namespace WindowShot;
 public static class WindowEnumerator
 {
     private const int GwlExStyle = -20;
+    private const uint GaRoot = 2;
     private const long WsExToolWindow = 0x00000080;
     private const int DwmwaCloaked = 14;
 
@@ -95,6 +96,57 @@ public static class WindowEnumerator
             .ToArray();
     }
 
+    public static WindowInfo? Describe(IntPtr handle)
+    {
+        handle = GetAncestor(handle, GaRoot);
+        if (handle == IntPtr.Zero || !IsWindowVisible(handle) || GetWindowTextLength(handle) == 0)
+        {
+            return null;
+        }
+
+        var className = GetClassNameText(handle);
+        if (className is "Progman" or "WorkerW" or "Shell_TrayWnd" or "Shell_SecondaryTrayWnd")
+        {
+            return null;
+        }
+
+        GetWindowThreadProcessId(handle, out var processId);
+        if (processId == Environment.ProcessId)
+        {
+            return null;
+        }
+
+        if (!GetWindowRect(handle, out var rect))
+        {
+            return null;
+        }
+
+        var width = rect.Right - rect.Left;
+        var height = rect.Bottom - rect.Top;
+        if (width <= 1 || height <= 1)
+        {
+            return null;
+        }
+
+        var title = GetWindowTextText(handle);
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return null;
+        }
+
+        var process = GetProcessInfo((int)processId);
+        return new WindowInfo
+        {
+            Handle = handle,
+            Title = title.Trim(),
+            ProcessName = process.Name,
+            Width = width,
+            Height = height,
+            IsMinimized = IsIconic(handle),
+            Icon = process.Icon
+        };
+    }
+
     private static (string Name, ImageSource? Icon) GetProcessInfo(int processId)
     {
         return ProcessCache.GetOrAdd(processId, id =>
@@ -165,6 +217,9 @@ public static class WindowEnumerator
 
     [DllImport("user32.dll")]
     private static extern bool IsIconic(IntPtr handle);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetAncestor(IntPtr handle, uint flags);
 
     [DllImport("user32.dll")]
     private static extern bool GetWindowRect(IntPtr handle, out NativeRect rect);
