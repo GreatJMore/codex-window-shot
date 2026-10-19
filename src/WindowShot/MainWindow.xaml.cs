@@ -40,9 +40,12 @@ public partial class MainWindow : Window
     private BitmapSource? _lastImage;
     private HwndSource? _source;
     private bool _suppressSelection;
+    private bool _suppressHotkeyToggle;
     private bool _closed;
     private bool _hotkeyRegistered;
     private IntPtr _blackWarningHandle;
+    private Window? _captureToastWindow;
+    private DispatcherTimer? _captureToastTimer;
 
     public MainWindow(string? initialSelection = null)
     {
@@ -51,6 +54,9 @@ public partial class MainWindow : Window
         _initialSelection = initialSelection;
         _settings = AppSettings.Load();
         Topmost = _settings.Topmost;
+        _suppressHotkeyToggle = true;
+        HotkeyToggle.IsChecked = _settings.HotkeyEnabled;
+        _suppressHotkeyToggle = false;
         UpdatePinVisual();
 
         _previewTimer = new DispatcherTimer
@@ -87,11 +93,7 @@ public partial class MainWindow : Window
     {
         RefreshWindows(updateStatus: true);
         _refreshTimer.Start();
-
-        if (!_hotkeyRegistered)
-        {
-            StatusText.Text = "全局快捷键未注册，可能已被其他程序占用";
-        }
+        ApplyHotkeySetting(announce: false);
 
         if (!string.IsNullOrWhiteSpace(_initialSelection))
         {
@@ -111,11 +113,102 @@ public partial class MainWindow : Window
         var handle = new WindowInteropHelper(this).Handle;
         _source = HwndSource.FromHwnd(handle);
         _source?.AddHook(WndProc);
+    }
+
+    private void HotkeyToggle_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_suppressHotkeyToggle)
+        {
+            return;
+        }
+
+        _settings.HotkeyEnabled = HotkeyToggle.IsChecked == true;
+        _settings.Save();
+        ApplyHotkeySetting(announce: true);
+    }
+
+    private void ApplyHotkeySetting(bool announce)
+    {
+        if (_settings.HotkeyEnabled)
+        {
+            if (TryRegisterHotkey())
+            {
+                SetHotkeyToggle(true);
+                UpdateHotkeyVisual();
+                if (announce)
+                {
+                    StatusText.Text = "快捷键已开启";
+                }
+
+                return;
+            }
+
+            _settings.HotkeyEnabled = false;
+            _settings.Save();
+            SetHotkeyToggle(false);
+            UpdateHotkeyVisual();
+            StatusText.Text = "快捷键未注册，可能被其他程序占用";
+            return;
+        }
+
+        UnregisterCurrentHotkey();
+        SetHotkeyToggle(false);
+        UpdateHotkeyVisual();
+        if (announce)
+        {
+            StatusText.Text = "快捷键已关闭";
+        }
+    }
+
+    private bool TryRegisterHotkey()
+    {
+        if (_hotkeyRegistered)
+        {
+            return true;
+        }
+
+        var handle = new WindowInteropHelper(this).Handle;
+        if (handle == IntPtr.Zero)
+        {
+            return false;
+        }
+
         _hotkeyRegistered = RegisterHotKey(
             handle,
             HotkeyId,
             ModControl | ModAlt | ModShift | ModNoRepeat,
             VkS);
+        return _hotkeyRegistered;
+    }
+
+    private void UnregisterCurrentHotkey()
+    {
+        if (!_hotkeyRegistered)
+        {
+            return;
+        }
+
+        var handle = new WindowInteropHelper(this).Handle;
+        if (handle != IntPtr.Zero)
+        {
+            UnregisterHotKey(handle, HotkeyId);
+        }
+
+        _hotkeyRegistered = false;
+    }
+
+    private void SetHotkeyToggle(bool enabled)
+    {
+        _suppressHotkeyToggle = true;
+        HotkeyToggle.IsChecked = enabled;
+        _suppressHotkeyToggle = false;
+    }
+
+    private void UpdateHotkeyVisual()
+    {
+        HotkeyToggle.ToolTip = _hotkeyRegistered
+            ? "关闭全局截图快捷键 Ctrl+Alt+Shift+S"
+            : "启用全局截图快捷键 Ctrl+Alt+Shift+S";
     }
 
     private void MainWindow_Closed(object? sender, EventArgs e)
@@ -124,11 +217,12 @@ public partial class MainWindow : Window
         _previewTimer.Stop();
         _refreshTimer.Stop();
         _toastTimer.Stop();
+        _captureToastTimer?.Stop();
+        _captureToastWindow?.Close();
 
         if (_source is not null)
         {
-            var handle = new WindowInteropHelper(this).Handle;
-            UnregisterHotKey(handle, HotkeyId);
+            UnregisterCurrentHotkey();
             _source.RemoveHook(WndProc);
         }
 
@@ -472,6 +566,7 @@ public partial class MainWindow : Window
             var path = await Task.Run(() => SaveImage(result.Image, target));
             CopyImage(result.Image);
             ShowToast("已保存并复制");
+            ShowCaptureToast($"已保存并复制 · {target.ProcessName}");
             StatusText.Text = $"已保存 · {path}";
             StatusText.ToolTip = path;
         }
@@ -581,6 +676,91 @@ public partial class MainWindow : Window
         Toast.Visibility = Visibility.Visible;
         _toastTimer.Stop();
         _toastTimer.Start();
+    }
+
+    private void ShowCaptureToast(string message)
+    {
+        try
+        {
+            _captureToastTimer?.Stop();
+            _captureToastWindow?.Close();
+
+            var content = new StackPanel
+            {
+                Orientation = Orientation.Horizontal
+            };
+            content.Children.Add(new TextBlock
+            {
+                Text = "\uE73E",
+                FontFamily = new FontFamily("Segoe MDL2 Assets"),
+                FontSize = 12,
+                Foreground = new SolidColorBrush(Color.FromRgb(110, 231, 183)),
+                Margin = new Thickness(0, 0, 7, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            });
+            content.Children.Add(new TextBlock
+            {
+                Text = message,
+                FontFamily = new FontFamily("Segoe UI Variable Text, Microsoft YaHei UI"),
+                FontSize = 12,
+                Foreground = Brushes.White,
+                VerticalAlignment = VerticalAlignment.Center
+            });
+
+            var toast = new Window
+            {
+                Title = "WindowShot notification",
+                WindowStyle = WindowStyle.None,
+                AllowsTransparency = true,
+                Background = Brushes.Transparent,
+                ShowInTaskbar = false,
+                ShowActivated = false,
+                Topmost = true,
+                SizeToContent = SizeToContent.WidthAndHeight,
+                ResizeMode = ResizeMode.NoResize,
+                WindowStartupLocation = WindowStartupLocation.Manual,
+                Content = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromArgb(235, 16, 21, 28)),
+                    CornerRadius = new CornerRadius(6),
+                    Padding = new Thickness(12, 7, 12, 7),
+                    Child = content
+                }
+            };
+
+            toast.Show();
+            toast.UpdateLayout();
+            toast.Left = Math.Max(0, SystemParameters.WorkArea.Right - toast.ActualWidth - 24);
+            toast.Top = Math.Max(0, SystemParameters.WorkArea.Bottom - toast.ActualHeight - 24);
+
+            _captureToastWindow = toast;
+            _captureToastTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(2.2)
+            };
+            _captureToastTimer.Tick += (_, _) =>
+            {
+                _captureToastTimer?.Stop();
+                if (toast.IsVisible)
+                {
+                    toast.Close();
+                }
+            };
+            _captureToastTimer.Start();
+            toast.Closed += (_, _) =>
+            {
+                if (ReferenceEquals(_captureToastWindow, toast))
+                {
+                    _captureToastWindow = null;
+                }
+            };
+        }
+        catch
+        {
+            _captureToastTimer?.Stop();
+            _captureToastWindow?.Close();
+            _captureToastWindow = null;
+        }
     }
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)

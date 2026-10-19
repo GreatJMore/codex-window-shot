@@ -8,6 +8,7 @@ public sealed class AppSettings
 {
     public string? SaveFolder { get; set; }
     public bool Topmost { get; set; }
+    public bool HotkeyEnabled { get; set; } = true;
 
     private static string SettingsPath =>
         Path.Combine(
