@@ -1,0 +1,177 @@
+<Application x:Class="WindowShot.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             ShutdownMode="OnMainWindowClose">
+    <Application.Resources>
+        <SolidColorBrush x:Key="Bg" Color="#F3F5F8" />
+        <SolidColorBrush x:Key="Panel" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="Line" Color="#E2E7EE" />
+        <SolidColorBrush x:Key="TextPrimary" Color="#1B2430" />
+        <SolidColorBrush x:Key="TextSecondary" Color="#6B7787" />
+        <SolidColorBrush x:Key="TextMuted" Color="#98A2B3" />
+        <SolidColorBrush x:Key="Accent" Color="#146EF5" />
+        <SolidColorBrush x:Key="AccentHover" Color="#0D5ED6" />
+        <SolidColorBrush x:Key="AccentSoft" Color="#EAF2FF" />
+        <SolidColorBrush x:Key="HoverSoft" Color="#F5F8FC" />
+        <SolidColorBrush x:Key="Success" Color="#0E9F6E" />
+        <SolidColorBrush x:Key="Danger" Color="#D92D20" />
+        <SolidColorBrush x:Key="PreviewBg" Color="#10151C" />
+
+        <FontFamily x:Key="UiFont">Segoe UI Variable Text, Microsoft YaHei UI</FontFamily>
+        <FontFamily x:Key="IconFont">Segoe MDL2 Assets</FontFamily>
+
+        <Style TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        </Style>
+
+        <Style x:Key="IconButton" TargetType="Button">
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Root"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{StaticResource HoverSoft}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="#E9EEF5" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.4" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="Background" Value="{StaticResource Accent}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Root"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{StaticResource AccentHover}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="#0A4FB8" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Root" Property="Background" Value="#B7C5D8" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Background" Value="{StaticResource Panel}" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+            <Setter Property="BorderBrush" Value="#D7DEE8" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Root"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{StaticResource HoverSoft}" />
+                                <Setter TargetName="Root" Property="BorderBrush" Value="#BFCAD8" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="#EDF1F6" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="WindowListItem" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0,0,2" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Root"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                Padding="9,7"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{StaticResource HoverSoft}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Root" Property="Background" Value="{StaticResource AccentSoft}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SearchBoxStyle" TargetType="TextBox">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+            <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+    </Application.Resources>
+</Application>

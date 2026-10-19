@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>WindowShot</AssemblyName>
+    <RootNamespace>WindowShot</RootNamespace>
+    <Version>1.0.0</Version>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>false</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="app.ico" />
+  </ItemGroup>
+</Project>

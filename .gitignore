@@ -1,0 +1,14 @@
+# Build output
+src/**/bin/
+src/**/obj/
+src/**/.vs/
+*.pdb
+*.user
+*.suo
+*.log
+
+# Editor and OS clutter
+.vs/
+.idea/
+Thumbs.db
+.DS_Store

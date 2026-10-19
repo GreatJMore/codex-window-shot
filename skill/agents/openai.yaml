@@ -1,0 +1,3 @@
+interface:
+  display_name: "Window Shot"
+  short_description: "Capture a specific desktop window without overlapping content"
